@@ -8,6 +8,6 @@
   },
   "compileType": "miniprogram",
   "appid": "touristappid",
-  "projectname": "superior",
+  "projectname": "04.buy",
   "miniprogramRoot": "./dist"
 }

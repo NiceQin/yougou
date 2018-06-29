@@ -1,0 +1,93 @@
+<!--  -->
+<template>
+  <!--  -->
+  <view class='top'>
+    <view class="one">
+      <view class="left">
+        <text>收货人:</text>
+        <text>苏</text>
+      </view>
+      <view class="right">
+        <text>13566786996</text>
+        <text class="iconfont icon-jiantouyou"></text>
+      </view>
+    </view>
+    <text class="two">收货地址:广东广州市天河区</text>
+  </view>
+  <!--  -->
+  <view class="line"></view>
+  <!--  -->
+  <view class="cart">
+    <view class="title">优购生活馆</view>
+    <view class="cart-box">
+      
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  export default class Cart extends wepy.page {
+    config = {
+      navigationBarTitleText: "购物车",
+    };
+
+    data = {};
+
+    components = {};
+
+    methods = {};
+
+    events = {};
+
+    watch = {};
+
+    computed = {};
+
+    onLoad() { };
+
+    onShow() { };
+  }
+</script>
+
+<style lang='less'>
+  .top {
+    height: 208rpx;
+    display: flex;
+    flex-direction: column;
+    padding: 46rpx 34rpx 50rpx 18rpx;
+    justify-content: space-between;
+    box-sizing: border-box;
+    .one {
+      display: flex;
+      justify-content: space-between;
+      .left,.right {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 32rpx;
+        text:nth-child(1) {
+          margin-right: 30rpx;
+        }
+        .iconfont {
+          font-size: 22rpx;
+          color: #ccc;
+        }
+      }
+    }
+  }
+  // 
+  .line {
+    height: 18rpx;
+    background-color: skyblue;
+  }
+  // 
+  .cart {
+    .title {
+      height: 87rpx;
+      font-size: 34rpx;
+      line-height: 87rpx;
+      padding-left: 33rpx;
+    }
+  }
+</style>

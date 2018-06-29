@@ -1,0 +1,221 @@
+<!--  -->
+<style lang='less'>
+  
+// 轮播
+  .swiper {
+    height: 340rpx;
+    swiper{
+      height: 340rpx;
+    }
+    navigator {
+      display: block;
+      height: 340rpx;
+      image {
+      height: 340rpx;
+      width: 100%;
+      }
+    }
+    
+  }
+// 导航
+  .nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+     height: 181rpx;
+    .item {
+      image {
+        width: 128rpx;
+        height: 128rpx;
+      }
+    }
+  }
+// 楼层
+  .items {
+    .item {
+      padding-top: 30rpx;
+
+      .title {
+        height: 60rpx;
+        width: 100%;
+      }
+      .product-box {
+        padding: 20rpx 16rpx;
+        height: 386rpx;
+        navigator {
+          display: block;
+          box-sizing: border-box;
+          padding-right: 10rpx;
+          padding-bottom: 5rpx;  
+          image {
+            height: 100%;
+          }
+        }
+        navigator:nth-child(2n+3){
+          padding-right: 0;
+        }
+        navigator:first-child {
+          height: 100%;
+          
+        }
+        navigator:not(:first-child) {
+          height: 50%;
+        }
+      }
+    }
+  }
+  .clearfix {
+    overflow: hidden;
+  }
+  .fl {
+    float: left;
+  }
+  .fr {
+    float: right;
+  }
+  // 底部
+  .footor {
+    text-align: center;
+    font-size: 24rpx;
+    color: #999;
+  }
+  .icon-jiantoushang {
+      position: fixed;
+      text-align: center;
+      bottom: 20rpx;
+      right: 20rpx;
+      background-color: pink;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      font-size: 22rpx;
+      border-radius: 35rpx;
+      width: 70rpx;
+      height: 70rpx;
+    }
+</style>
+<template>
+  <searchBar></searchBar>
+  <!-- 轮播 -->
+  <view class="swiper"> 
+    <swiper indicator-dots autoplay circular>
+        <block wx:for="{{swiperData}}" wx:key="">
+            <swiper-item>
+              <navigator url="{{item.navigator_url}}" open-type="navigate" hover-class="none">
+                <image mode="aspectFill" src="{{item.image_src}}"></image>
+              </navigator>
+            </swiper-item>
+        </block>
+    </swiper>
+
+  </view>
+  <!-- 导航 -->
+  <view class="nav"> 
+    <view class="item" wx:for="{{navData}}">
+      <navigator url="{{item.navigator_url}}" open-type="navigate" hover-class="none">
+        <image src="{{item.image_src}}"></image>
+      </navigator>
+    </view>
+  </view>
+  <!--  -->
+  <view class="items">
+  <block wx:for="{{floorData}}" wx:key="">
+    <view class="item">
+      <image class="title" src="{{item.floor_title.image_src}}"></image>
+      <view class="product-box clearfix">
+        <block wx:for="{{item.product_list}}"  wx:for-index="i" wx:for-item="product">
+          <navigator class="fl" url="{{product.navigator_url}}">
+            <image style="width:{{product.image_width}}rpx;" src="{{product.image_src}}"></image>
+          </navigator>
+        </block>
+      </view>
+    </view>
+  </block>
+</view>
+  <!-- 底部 -->
+<view class="footor" >
+  <text class="iconfont icon-xiao"></text>
+  <text>我是有底线的</text>
+  
+</view>
+<view hidden="{{isHidden}}">
+  <text  @tap="gotop" class="iconfont icon-jiantoushang" >顶部</text>
+</view>
+</template>
+
+<script>
+import wepy from 'wepy';
+import searchBar from '../component/searchBar';
+export default class Index extends wepy.page {
+  config = {
+    navigationBarTitleText: '优品汇',    
+  }
+
+  data = {
+    swiperData:'',
+    navData:'',
+    floorData:'',
+    isHidden: true
+  }
+
+  components = {
+    searchBar:searchBar
+  }
+
+  methods = {
+    onPageScroll: function(event) {
+      if (event.scrollTop == 200) {
+        this.isHidden = false
+      }
+  },
+  gotop: function () { 
+    wepy.pageScrollTo({
+      scrollTop: 0,
+      duration: 300
+    });
+   } 
+    
+  }
+
+  events = {}
+
+  watch = {}
+
+  computed = {}
+
+  onLoad() {
+  //  top-bar
+    wx.request({
+      url: 'https://www.zhengzhicheng.cn/api/public/v1/home/swiperdata',
+      method: 'GET',
+      success: backData=>{
+        this.swiperData = backData.data.message;
+        this.$apply();
+      },
+    });
+  // 轮播
+    wx.request({
+      url: 'https://www.zhengzhicheng.cn/api/public/v1/home/catitems',
+      success: (backData)=>{
+        this.navData = backData.data.message;
+        this.$apply();
+        
+      }
+    });
+  // 楼层
+    wx.request({
+      url: 'https://www.zhengzhicheng.cn/api/public/v1/home/floordata',
+      success: backData=>{
+        this.floorData = backData.data.message;
+        this.$apply();
+        
+      },
+
+    });
+  }
+ 
+
+  onShow() {}
+}
+</script>
+
