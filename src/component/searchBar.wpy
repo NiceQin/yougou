@@ -3,7 +3,7 @@
   <view class='top-bar'>
     <icon type="search" size="24">
     </icon>
-    <input value="" type="search" placeholder="搜索" />
+    <input @tap="toSearch" value="" type="search" placeholder="搜索" />
   </view>
 </template>
 
@@ -18,7 +18,15 @@
       
     };
 
-    methods = {};
+    methods = {
+      toSearch(){
+        console.log(1111);
+        
+        wx.navigateTo({
+          url: '/pages/search'
+        });
+      }
+    };
 
     events = {};
 

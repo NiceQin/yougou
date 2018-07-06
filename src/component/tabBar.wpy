@@ -1,0 +1,82 @@
+<!--  -->
+<template>
+  <view class='top'>
+      <block wx:for="{{tabArr}}" wx:key="">
+        
+        <view @tap="selectIndex({{index}})" class="item {{selectIndex == index ? 'active' : ''}}">{{item}}</view>
+      </block>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+export default class TabBar extends wepy.component {
+  props = {
+      
+       tabArr: {
+        type: Array,
+        default:[]
+    },
+
+    selectIndex: {
+        type: Number,
+        default: 0,
+        twoWay: true
+    }
+  }
+
+  data = {
+     
+  }
+
+  components = {}
+
+  methods = {
+    selectIndex(index) {
+      this.selectIndex = index
+    }
+  }
+
+  events = {}
+
+  watch = {}
+
+  computed = {}
+
+  onLoad() {
+      console.log(this.syncTitle);
+      
+  }
+
+  onShow() {}
+}
+</script>
+
+<style lang='less'>
+.top {
+  display: flex;
+  padding: 0 10rpx;
+  .item {
+    width: 25%;
+    height: 80rpx;
+    line-height: 80rpx;
+    font-size: 32rpx;
+    color: #333;
+    text-align: center;
+    position: relative;
+    &.active {
+      color: #eb4450;
+      &::before {
+        content: '';
+        display: block;
+        height: 4rpx;
+        background-color: #eb4450;
+        width: 100%;
+        position: absolute;
+        left: 0;
+        bottom: 0;
+      }
+    }
+  }
+}
+</style>

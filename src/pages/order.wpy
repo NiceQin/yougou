@@ -1,0 +1,82 @@
+<!--  -->
+<template>
+  <!-- <view class='top'>
+      <view @tap="selectIndex(0)" class="item {{selectIndex == 0 ? 'active' : ''}}">全部订单</view>
+      <view @tap="selectIndex(1)" class="item {{selectIndex == 1 ? 'active' : ''}}">待付款</view>
+      <view @tap="selectIndex(2)" class="item {{selectIndex == 2 ? 'active' : ''}}">待收货</view>
+      <view @tap="selectIndex(3)" class="item {{selectIndex == 3 ? 'active' : ''}}">退款/退货</view>
+  </view> -->
+  <view class="orderInfo">
+      <view hidden="{{selectIndex !=0 ? true : false}}" class="one">0</view>
+      <view hidden="{{selectIndex !=1 ? true : false}}" class="one">1</view>
+      <view hidden="{{selectIndex !=2 ? true : false}}" class="one">2</view>
+      <view hidden="{{selectIndex !=3 ? true : false}}" class="one">3</view>
+  </view>
+  <tabBar :title="selectIndex" :tabArr.sync="tabArr" :selectIndex="selectIndex"></tabBar>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import tabBar from '../component/tabBar'
+  export default class Order extends wepy.page {
+    config = {
+      navigationBarTitleText: "全部订单",
+    };
+
+    data = {
+        // selectIndex:0,
+        selectIndex: 1,
+        tabArr:['全部订单','已付款','待付款','退款/退货']
+    };
+
+    components = {
+        tabBar
+    };
+    
+
+    methods = {
+        // selectIndex(index){
+        //     this.selectIndex =index;
+        // }
+    };
+
+    events = {};
+
+    watch = {};
+
+    computed = {};
+
+    onLoad() { };
+
+    onShow() { };
+  }
+</script>
+
+<style lang='less'>
+    // .top {
+    //     display: flex;
+    //     padding: 0 10rpx;
+    //     .item {
+    //         width: 25%;
+    //         height: 80rpx;
+    //         line-height: 80rpx;
+    //         font-size: 32rpx;
+    //         color: #333;
+    //         text-align: center;
+    //         position: relative;
+    //         &.active {
+    //             color: purple;
+    //             &::before {
+    //                 content: '';
+    //                 display: block;
+    //                 height: 4rpx;
+    //                 background-color: red;
+    //                 width: 100%;
+    //                 position: absolute;
+    //                 left: 0;
+    //                 bottom: 0;
+    //             }
+    //         }
+    //     }
+    // }
+</style>

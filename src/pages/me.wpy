@@ -1,13 +1,14 @@
 <!--  -->
 <template>
   <view class='top'>
-    <view class="info">
+    <view  class="info">
        <view class="contain">
-      <view class="iconfont icon-xiaoxi"></view>
-      <image src="../image/icon.png"></image>
+      <view  class="iconfont icon-xiaoxi"></view>
+      <image  src="{{userInfo?userInfo.avatarUrl:'../image/icon.png'}}"/>
+      <button  open-type="getUserInfo" @tap="login"></button>
       <view class="iconfont icon-shezhi"></view>
     </view>
-    <text>闪亮登录/注册</text>
+    <text>{{userInfo?userInfo.nickName:'登陆'}}</text>
     </view>
    
   </view>
@@ -34,183 +35,244 @@
   <view class="order">
     <view class="title">我的订单</view>
     <view class="opts">
-      <navigator url="{{}}" open-type="navigate" hover-class="none">
+      <navigator url="{{'./order'}}" open-type="navigate" hover-class="none">
         <text class="iconfont icon-daifukuan"></text>
         <text class="txt">待付款</text>
       </navigator>
-      <navigator url="{{}}" open-type="navigate" hover-class="none">
+      <navigator url="{{'./order'}}" open-type="navigate" hover-class="none">
         <text class="iconfont icon-daishouhuo"></text>
         <text class="txt">待收货</text>
       </navigator>
-      <navigator url="{{}}" open-type="navigate" hover-class="none">
+      <navigator url="{{'./order'}}" open-type="navigate" hover-class="none">
         <text class="iconfont icon-tuikuan"></text>
         <text class="txt">退款/退货</text>
       </navigator>
-      <navigator url="{{}}" open-type="navigate" hover-class="none">
+      <navigator url="{{'./order'}}" open-type="navigate" hover-class="none">
         <text class="iconfont icon-dingdan"></text>
         <text class="txt">全部订单</text>
       </navigator>
     </view>
   </view>
-  <navigator class="items">
+  <view @tap="getAddress" class="items">
       <text>收货地址管理</text>
       <text class="iconfont icon-jiantouyou"></text>
-    </navigator>
+  </view>
   <view class="footer">
     
-    <navigator class="items">
+    <view  class="items">
       <text>联系客服</text>
       <text class="iconfont">400-611-8000</text>
-    </navigator>
-    <navigator class="items">
+    </view>
+    <view  class="items">
       <text>意见反馈</text>
       <text class="iconfont icon-jiantouyou"></text>
-    </navigator>
-    <navigator class="items">
+    </view>
+    <view  class="items">
       <text>关于我们</text>
       <text class="iconfont icon-jiantouyou"></text>
-    </navigator>
+    </view>
   </view>
+
 </template>
 
 <script>
-  import wepy from 'wepy';
-  export default class Me extends wepy.page {
-    config = {
-      navigationBarTitleText: "个人中心",
-    };
-
-    data = {};
-
-    components = {};
-
-    methods = {};
-
-    events = {};
-
-    watch = {};
-
-    computed = {};
-
-    onLoad() { };
-
-    onShow() { };
+import wepy from 'wepy'
+export default class Me extends wepy.page {
+  config = {
+    navigationBarTitleText: '个人中心'
   }
+
+  data = {
+    userInfo:''
+  }
+
+  components = {}
+
+  methods = {
+    login() {
+      wx.login({
+        success: loginRes => {
+           wx.getUserInfo({
+            withCredentials: 'false',
+            lang: 'zh_CN',
+            success: userRes => {
+              this.userInfo = userRes.userInfo
+              this.$apply()
+              wx.request({
+                url:'https://127.0.0.1/api/public/v1/users/wxlogin',
+                data:{
+                    code:loginRes.code,
+                    encryptedData:userRes.encryptedData,
+                    iv:userRes.iv,
+                    rawData:userRes.rawData,
+                    signature:userRes.signature
+                },
+                method:'post',
+                success: (res)=>{
+                  wx.setStorage({
+                    key: 'token',
+                    data: res.data.message.token
+                  });
+                  
+                }
+                
+              });
+            }
+          });
+        }
+      });
+     
+    },
+    getAddress(){
+      wx.chooseAddress({
+        success: res => {
+         
+        }
+      });
+    }
+  }
+
+  events = {}
+
+  watch = {}
+
+  computed = {}
+
+  onLoad() {
+    // wx.getUserInfo({
+    //     withCredentials: 'false',
+    //     lang: 'zh_CN',
+    //     success: res => {
+    //       this.userInfo=res.userInfo;
+    //        this.$apply();
+    //     }
+    //   });
+  }
+
+  onShow() {}
+}
 </script>
 
 <style lang='less'>
 page {
   background-color: #f4f4f4;
 }
-  .top {
-    height: 426rpx;
-    background-color: #ff2d4a;
+.top { 
+  height: 426rpx;
+  background-color: #ff2d4a;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  color: white;
+  .info {
+    text-align: center;
+  }
+  .contain {
+    position: relative;
+    display: flex;
+    width: 336rpx;
+    height: 142rpx;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 32rpx;
+    image {
+      width: 142rpx;
+      height: 142rpx;
+      border-radius: 71rpx;
+    }
+    button {
+      width: 142rpx;
+      height: 142rpx;
+      border-radius: 71rpx;
+      background-color: transparent;
+      position: absolute;
+      left: 95rpx;
+    }
+  }
+  text {
+    font-size: 30rpx;
+    display: block;
+    margin: 0 auto;
+  }
+}
+// care
+.care {
+  width: 718rpx;
+  height: 120rpx;
+  background-color: #fff;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  transform: translateY(-28rpx);
+  .item {
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
     align-items: center;
-     color: white;
-     .info {
-       text-align: center;
-     }
-    .contain {
-      display: flex;
-      width: 336rpx;
-      height: 142rpx;
-      justify-content: space-between;
-      align-items: center;    
-      font-size: 32rpx; 
-        image {
-          width: 142rpx;
-          height: 142rpx;
-          border-radius: 71rpx;
-        }
+    font-size: 24rpx;
+    color: #9c9c9c;
+    text:nth-child(1) {
+      color: #d6d6d6;
     }
-    text {
-          font-size: 30rpx;
-          display: block;
-          margin:  0 auto;
-        }
   }
-  // care
-  .care {
-    width: 718rpx;
-    height: 120rpx;
-    background-color: #fff;
-    margin: 0 auto;
+}
+// order
+.order {
+  width: 718rpx;
+  height: 255rpx;
+  margin: 0 auto;
+  background-color: #fff;
+  .title {
+    height: 88rpx;
+    font-size: 32rpx;
+    border-bottom: 1px solid #ddd;
+    padding-left: 30rpx;
+    line-height: 88rpx;
+  }
+  .opts {
     display: flex;
-    justify-content: space-around;
+    height: 166rpx;
     align-items: center;
-    transform: translateY(-28rpx);
-    .item {
+    >navigator {
+      width: 25%;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      font-size: 24rpx;
-      color: #9c9c9c;
-      text:nth-child(1){
-        color: #d6d6d6;
-      }
-    }
-  }
-  // order
-  .order {
-    width: 718rpx;
-    height: 255rpx;
-    margin: 0 auto;
-    background-color: #fff;
-    .title {
-      height: 88rpx;
-      font-size: 32rpx;
-      border-bottom: 1px solid #ddd;
-      padding-left: 30rpx;
-      line-height: 88rpx;
-    }
-    .opts {
-      display: flex;
-      height: 166rpx;
-      align-items: center;
-      navigator {
-        width: 25%;
-        display: flex;
-        flex-direction: column;
-        height: 106rpx;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 28rpx;
-        .iconfont {
-          color: red;
-          font-size: 64rpx;
-        }
-      }
-    }
-  }
-  // footer
-   .items {    
-      box-sizing: border-box;
-      width: 718rpx; 
-      padding: 0 32rpx;
-      background-color: #fff;
-      display: flex;
-      height: 87rpx;
+      height: 106rpx;
       justify-content: space-between;
       align-items: center;
-      margin: 20rpx auto;
-     
-      text {
-        font-size: 31rpx;
-      }
+      font-size: 28rpx;
       .iconfont {
-        color: #ccc;
-        font-size: 20rpx;
+        color: red;
+        font-size: 64rpx;
       }
     }
-  .footer {
-    .items {
-      margin: 0 auto;
-       border-bottom: 1px solid #ddd;
-    }
- 
-   
   }
+}
+// footer
+.items {
+  box-sizing: border-box;
+  width: 718rpx;
+  padding: 0 32rpx;
+  background-color: #fff;
+  display: flex;
+  height: 87rpx;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20rpx auto;
+
+  text {
+    font-size: 31rpx;
+  }
+  .iconfont {
+    color: #ccc;
+    font-size: 20rpx;
+  }
+}
+.footer {
+  .items {
+    margin: 0 auto;
+    border-bottom: 1px solid #ddd;
+  }
+}
 </style>

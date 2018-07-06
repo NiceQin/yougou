@@ -132,13 +132,16 @@ export default class Category extends wepy.page {
   computed = {}
 
   onLoad() {
+    wx.showLoading({
+      title: '加载中',
+      mask: true,
+    });
     wx.request({
       url: 'https://www.zhengzhicheng.cn/api/public/v1/categories',
       method: 'GET',
       success: data => {
         this.categoryList = data.data.message
-        console.log(data.data.message)
-
+        wx.hideLoading();
         this.$apply()
       }
     })

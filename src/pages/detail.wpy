@@ -1,0 +1,289 @@
+<!--  -->
+<template>
+  <swiper indicator-dots autoplay circular>
+      <block wx:for="{{swiperData.pics}}" wx:key="">
+          <swiper-item @tap="previewImg">
+              <image mode="aspectFill" src="{{item.pics_mid_url}}" />
+          </swiper-item>
+      </block>
+  </swiper>
+  <!--  -->
+  <view class="good_info">
+    <view class="price">¥ {{swiperData.goods_price}}</view>
+    <view class="title">
+      <view class="left">{{swiperData.goods_name}}</view>
+      <view class="right">
+        <view class="iconfont icon-shoucang"></view>
+        <view>收藏</view>
+      </view>
+    </view>
+    <view class="express">
+      快递: <text>免运费</text>
+    </view>
+  </view>
+  <!-- tab -->
+  <view class="tab">
+      <view @tap="selectIndex({{0}})" class="{{selectIndex ==0 ?'active':'' }}">图文介绍</view>
+      <view @tap="selectIndex({{1}})" class="{{selectIndex ==1 ?'active':'' }}">参数详情</view>
+  </view>
+  <view class="tab-content">
+      <view class="left" hidden="{{selectIndex ==0?false:true}}">
+        <import src="../wxParse/wxParse.wxml"/>
+        <!-- //这里data中article为bindName -->
+        <template is="wxParse" data="{{wxParseData:article.nodes}}"/>
+      </view>
+      <view class="right" hidden="{{selectIndex ==1?false:true}}">
+        <block wx:for="{{swiperData.attrs}}" >
+            <view class="row">
+                <view class="col">{{item.attr_name}}</view>
+                <view class="col">{{item.attr_value}}</view>
+            </view>
+        </block>
+      </view>
+  </view>
+  <!-- footer -->
+  <view class="footer">
+      <view class="ops iconfont icon-kefu"><text>联系客服</text></view>
+      <view @tap="tocart" class="ops iconfont icon-gouwuche"><text>购物车</text></view>
+      <view @tap="joinCart" class="ops join">加入购物车</view>
+      <view @tap="tocart" class="ops buy">立即购买</view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+//在使用的View中引入WxParse模块
+var WxParse = require('../wxParse/wxParse.js')
+export default class Detail extends wepy.page {
+  config = {
+    navigationBarTitleText: '商品详情页'
+  }
+
+  data = {
+      goods_id:'',
+    swiperData: '',
+    previewImg: [],
+    selectIndex:0,
+    selectHidden:true
+  }
+
+  components = {}
+
+  methods = {
+    previewImg() {
+      wx.previewImage({
+        urls: this.previewImg
+      })
+    },
+    selectIndex(index){
+        this.selectIndex = index
+    },
+    tocart(){
+        wx.switchTab({
+            url: '/pages/cart'
+        });
+    },
+    // 购物车
+    joinCart(){
+        var cartData = '';
+        wx.getStorage({
+            key: 'cart',
+            success: res => {
+                cartData = res.data
+                if (cartData[this.goods_id]) {
+                    cartData[this.goods_id] += 1
+                }else {
+                    cartData[this.goods_id] = 1
+                }
+               wx.setStorage({
+                   key: 'cart',
+                   data: cartData
+               });
+                
+            },
+            fail: res => {
+                cartData = {}
+                cartData[this.goods_id] = 1
+                wx.setStorage({
+                    key: 'cart',
+                    data: cartData
+                })
+            }
+        });
+        wx.showToast({
+            title: '正在加入购物车',
+            icon: 'loading',
+            duration: 500,
+            mask: true,
+        });
+    }
+  }
+
+  events = {}
+
+  watch = {}
+
+  computed = {}
+
+  onLoad(options) {
+      this.goods_id = options.goods_id
+    wx.request({
+      url: 'https://www.zhengzhicheng.cn/api/public/v1/goods/detail?goods_id=',
+      method: 'GET',
+      data: {
+        goods_id: options.goods_id
+      },
+      success: res => {
+        this.swiperData = res.data.message
+        this.swiperData.pics.forEach(res => {
+          this.previewImg.push(res.pics_sma_url)
+        })
+        this.$apply()
+        var article = this.swiperData.goods_introduce
+        /**
+         * WxParse.wxParse(bindName , type, data, target,imagePadding)
+         * 1.bindName绑定的数据名(必填)
+         * 2.type可以为html或者md(必填)
+         * 3.data为传入的具体数据(必填)
+         * 4.target为Page对象,一般为this(必填)
+         * 5.imagePadding为当图片自适应是左右的单一padding(默认为0,可选)
+         */
+        var that = this
+        WxParse.wxParse('article', 'html', article, that, 5)
+      },
+      fail: () => {}
+    })
+  }
+
+  onShow() {}
+}
+</script>
+
+<style lang='less'>
+@import '../wxParse/wxParse.wxss';
+page {
+    padding-bottom: 150rpx;
+}
+// 
+swiper {
+    height: 720rpx;
+    swiper-item {
+        padding: 10rpx;
+        box-sizing: border-box;
+        width: 100%;
+        height: 100%;
+        image {
+            width: 100%;
+            height: 100%;
+        }
+    }
+}
+// 
+.good_info {
+  padding-left: 16rpx;
+  .price {
+    font-size: 32rpx;
+    color: #eb4450;
+  }
+  .title {
+    margin-top: 43rpx;
+    display: flex;
+    .left {
+      flex: 1;
+    }
+    .right {
+      width: 142rpx;
+      text-align: center;
+      color: gary;
+      font-size: 26rpx;
+    }
+  }
+  .express {
+    color: gary;
+    font-size: 28rpx;
+  }
+}
+// 
+.tab {
+    display: flex;
+    >view {
+        flex: 1;
+        font-size:36rpx;
+        height: 80rpx;
+        line-height: 80rpx;
+        text-align: center;
+        &.active {
+            color: palevioletred;
+            box-shadow: inset 0 -8rpx 0 #eb4450;
+            
+        }
+    }
+}
+.tab-content {
+    padding: 30rpx 10rpx 0;
+    .right {
+        padding: 10rpx;
+        .row {
+        display: flex;
+        height: 80rpx;
+        background-color: deepskyblue;
+        width: 100%;
+        .col {
+          text-align: center;
+          flex: 1;
+          font-size: 24rpx;
+          line-height: 80rpx;
+          border: 1rpx solid lightgray;
+        }
+        .col:last-child {
+          border-left: none;
+        }
+      }
+      // 除了最后一个row 中间的col 底部边框都没有
+      .row:not(:last-child) {
+        .col {
+          border-bottom: none;
+        }
+      }
+    }
+}
+image.wxParse-img {
+  display: block;
+  width: 100%;
+}
+// 
+.footer {
+    background-color: #fff;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100rpx;
+    display: flex;
+    justify-content: space-around;
+    .ops {
+        flex: 1;
+        font-size: 30rpx;
+        text-align: center;
+        color: #fff;
+        &.iconfont {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            font-size: 36rpx;
+            color: #999999;
+            text {
+                font-size: 24rpx;
+            }
+        }
+    }
+    .join {
+        background-color: #f4b73f; 
+        line-height: 100rpx;
+    }
+    .buy {
+        background-color: #eb4450; 
+        line-height: 100rpx; 
+    }
+}
+</style>

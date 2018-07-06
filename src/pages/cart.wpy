@@ -1,93 +1,536 @@
 <!--  -->
 <template>
+  <view class="empty" hidden="{{isfull}}">
+    <view class="iconfont icon-daishouhuo"></view>
+    <view class="txt">
+      你还没有添加任何商品
+    </view>
+  </view>
   <!--  -->
-  <view class='top'>
-    <view class="one">
+  <view class="full" hidden="{{!isfull}}">
+    <view class='top'>
+    <view @tap="chooseAddress" class="one">
       <view class="left">
         <text>收货人:</text>
-        <text>苏</text>
+        <text>{{address.userName}}</text>
       </view>
       <view class="right">
-        <text>13566786996</text>
+        <text>{{address.telNumber}}</text>
         <text class="iconfont icon-jiantouyou"></text>
       </view>
     </view>
-    <text class="two">收货地址:广东广州市天河区</text>
+    <text class="two">收货地址: {{address.provinceName}}{{address.cityName}}{{address.countyName}}{{address.detailInfo}}</text>
   </view>
   <!--  -->
-  <view class="line"></view>
+  <view class="line">
+    <image src="../image/border.PNG">
+  </view>
   <!--  -->
   <view class="cart">
-    <view class="title">优购生活馆</view>
+    <view class="title1 iconfont icon-dianpu">优购生活馆</view>
     <view class="cart-box">
-      
+      <block wx:for="{{cartData}}" wx:key="">
+        <view class="item">
+          <radio @tap="change({{index}})" checked="{{item.isChecked}}" color="#eb4450" />
+          <view class="info-box">
+            <image src="{{item.goods_small_logo}}" />
+            <view class="right">
+              <view class="title">{{item.goods_name}}</view>
+              <view class="bottom">
+                <view class="price">¥<text>{{item.goods_price}}</text>.00</view>
+                <view class="control">
+                  <view @tap="sub({{item.goods_id}})" class="sub">-</view>
+                  <text>{{car[item.goods_id]}}</text>
+                  <view @tap="add({{item.goods_id}})" class="add">+</view>
+                </view>
+              </view>
+            </view>
+          </view>          
+        </view>        
+      </block>
     </view>
   </view>
+  <!--  -->
+  <view class="count">
+    <view class="left">
+      <view class="check">
+        <radio @tap="allCheck" color="#eb4450" checked="{{isAll}}"/>全选
+      </view>
+      <view class="sum">
+        <view class="price">
+          合计: <text>¥</text><text class="big">{{totalPrice}}</text><text>.00</text>
+        </view>
+        <view class="yunfei">包含运费</view>
+      </view>
+    </view>
+    <view @tap="pay" class="right">结算({{checkedNum}})</view>
+  </view>
+  </view>
+  
 </template>
 
 <script>
-  import wepy from 'wepy';
-  export default class Cart extends wepy.page {
-    config = {
-      navigationBarTitleText: "购物车",
-    };
-
-    data = {};
-
-    components = {};
-
-    methods = {};
-
-    events = {};
-
-    watch = {};
-
-    computed = {};
-
-    onLoad() { };
-
-    onShow() { };
+import wepy from 'wepy'
+export default class Cart extends wepy.page {
+  config = {
+    navigationBarTitleText: '购物车'
   }
+
+  data = {
+    isfull: false,
+    car: '',
+    cartData: [],
+    address: '',
+    isAll: true,
+    totalPrice:0
+  }
+
+  components = {}
+
+  methods = {
+    // 地址
+    chooseAddress() {
+      wx.chooseAddress({
+        success: res => {
+          console.log(res)
+          this.address = res
+          this.$apply()
+          wx.setStorage({
+            key: 'address',
+            data: res
+          })
+        }
+      })
+    },
+    add(goods_id) {
+      this.car[goods_id]++
+    },
+    sub(goods_id) {
+      this.car[goods_id]--
+      if (this.car[goods_id] == 0) {
+        delete this.car[goods_id]
+        console.log(this.car[goods_id])
+
+        wx.setStorage({
+          key: 'cart',
+          data: this.car
+        })
+        // 删除商品id
+        for (var i = 0; i < this.cartData.length; i++) {
+          if (this.cartData[i].goods_id == goods_id) {
+            this.cartData.splice(i, 1)
+          }
+        }
+        if (this.cartData.length == 0) {
+          this.isfull = false
+          wx.removeStorage({
+                  key: 'cart'
+                })
+        }
+        var checkedNum = 0
+        this.cartData.forEach(element => {
+          if (element.isChecked == true) {
+            checkedNum++
+          }
+        })
+        if (checkedNum == this.cartData.length) {
+          this.isAll = true
+        } else {
+          this.isAll = false
+        }
+        this.$apply()
+      }
+    },
+    change(index) {
+      this.cartData[index].isChecked = !this.cartData[index].isChecked
+      var checkedNum = 0
+      this.cartData.forEach(element => {
+        if (element.isChecked == true) {
+          checkedNum++
+        }
+      })
+      if (checkedNum == this.cartData.length) {
+        this.isAll = true
+      } else {
+        this.isAll = false
+      }
+     
+    },
+    allCheck() {
+      this.isAll = !this.isAll
+      // if (this.isAll == true) {
+      //   this.cartData.forEach(element => {
+      //     element.isChecked = true
+      //   })
+      // } else {
+      //   this.cartData.forEach(element => {
+      //     element.isChecked = false
+      //   })
+      // }
+      this.cartData.forEach(element => {
+        element.isChecked = this.isAll
+      });
+      
+    },
+    pay() {
+      // 判断选是否选商品
+      var checkedNum = 0
+      this.cartData.forEach(element => {
+        if (element.isChecked == true) {
+          checkedNum++
+        }
+      })
+      if (checkedNum == 0) {
+        wx.showToast({
+          title: '请选择商品',
+          icon: 'loading',
+          duration: 500,
+          mask: true,
+        });
+        return
+      }
+      // 选地址
+      if (this.address == '') {
+        wx.showToast({
+          title: '没写收货地址哦',
+          icon: 'loading',
+          duration: 500,
+          mask: true,
+        });
+        return
+      }
+      // 是否登陆
+     
+      wx.getStorage({
+        key: 'token',
+        success: res => {
+          var token = wx.getStorageSync('token');
+          var temArr = []
+          for (var i = 0; i < this.cartData.length; i++) {
+            if(this.cartData[i].isChecked==true){
+            // 生成一个临时对象
+            var obj = {}
+            obj.goods_id = this.cartData[i].goods_id
+            obj.goods_price = this.cartData[i].goods_price
+            // 获取数量
+            obj.goods_number = this.car[this.cartData[i].goods_id]
+            // 加到临时数组中
+            temArr.push(obj)
+            }
+          }
+          this.$apply()
+          wx.request({
+            url: 'https://127.0.0.1/api/public/v1/my/orders/create',
+            method: 'post',
+            data: {
+              order_price: this.totalPrice,
+              consignee_addr: `${this.address.cityName}${
+                this.address.countyName
+              }${this.address.detailInfo}`,
+              goods: temArr
+            },
+            header: {
+              Authorization: token
+            },
+             success: res => {
+              console.log(res)
+              // 订单创建成功
+              // 生成预支付交易单
+              wx.request({
+                url: 'https://127.0.0.1/api/public/v1/my/orders/req_unifiedorder',
+                data: {
+                  order_number: res.data.message.order_number
+                },
+                header: {
+                  Authorization: token
+                },
+                type: 'post',
+                success: res => {
+                  console.log(res)
+                  // 预支付订单创建成功之后
+                  // 发起微信支付
+                  wx.requestPayment({
+                    timeStamp: res.data.message.wxorder.timeStamp,
+                    nonceStr: res.data.message.wxorder.nonceStr,
+                    package: res.data.message.wxorder.package,
+                    signType: res.data.message.wxorder.signType,
+                    paySign: res.data.message.wxorder.paySign,
+                    success: res => {
+                      console.log(res)
+                    },
+                    fail: () => {}
+                  })
+                }
+              })
+            }
+          });
+        },
+        fail: res => {
+         wx.showModal({
+           title: '提示',
+           content: '你未登陆',
+           showCancel: true,
+           cancelText: '取消',
+           cancelColor: '#000000',
+           confirmText: '确定',
+           confirmColor: '#3CC51F',
+           success: res => {
+             if(res.confirm){
+               wx.switchTab({
+                 url: '/pages/me'
+               });
+             }
+           }
+         });
+          
+        }
+      });
+    }
+  }
+
+  events = {}
+
+  watch = {}
+
+  computed = {
+    totalPrice() {
+      var totalPrice = 0
+      for (var i = 0; i < this.cartData.length; i++) {
+        if (this.cartData[i].isChecked == true) {
+          var price = this.cartData[i].goods_price
+          var nums = this.car[this.cartData[i].goods_id]
+          totalPrice += price * nums
+        }
+      }
+      return totalPrice
+    },
+    checkedNum() {
+      var checkedNum = 0
+      this.cartData.forEach(element => {
+        if (element.isChecked == true) {
+          checkedNum++
+        }
+      })
+      return checkedNum
+    }
+  }
+
+  onLoad() {}
+
+  onShow() {
+    // 获取缓存
+    wx.getStorage({
+      key: 'cart',
+      success: res => {
+        this.car = res.data
+        if (JSON.stringify(this.car) != '{}') {
+          this.isfull = true
+          this.$apply()
+          var goods_ids = ''
+          for (const key in this.car) {
+            goods_ids += key
+            goods_ids += ','
+          }
+          goods_ids = goods_ids.slice(0, -1)
+          wx.request({
+            url: 'https://www.zhengzhicheng.cn/api/public/v1/goods/goodslist',
+            method: 'GET',
+            data: {
+              goods_ids: goods_ids
+            },
+            success: res => {
+              for (var i = 0; i < res.data.message.length; i++) {
+                res.data.message[i].isChecked = true
+              }
+              this.cartData = res.data.message
+              this.$apply()
+            }
+          })
+        } else {
+          this.isfull = false
+        }
+      }
+    })
+    // 地址
+    wx.getStorage({
+      key: 'address',
+      success: res => {
+        this.address = res.data
+        this.$apply()
+      }
+    })
+  }
+}
 </script>
 
 <style lang='less'>
-  .top {
-    height: 208rpx;
+page {
+  padding-bottom: 100rpx;
+}
+.empty {
+  padding-top: 200rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  .iconfont {
+    font-size: 200rpx;
+    color: red;
+  }
+  .txt {
+    font-size: 40rpx;
+  }
+}
+//
+.top {
+  // height: 208rpx;
+  display: flex;
+  flex-direction: column;
+  padding: 46rpx 34rpx 50rpx 18rpx;
+  justify-content: space-between;
+  box-sizing: border-box;
+  .one {
     display: flex;
-    flex-direction: column;
-    padding: 46rpx 34rpx 50rpx 18rpx;
     justify-content: space-between;
-    box-sizing: border-box;
-    .one {
+    .left,
+    .right {
       display: flex;
       justify-content: space-between;
-      .left,.right {
+      align-items: center;
+      font-size: 32rpx;
+      text:nth-child(1) {
+        margin-right: 30rpx;
+      }
+      .iconfont {
+        font-size: 22rpx;
+        color: #ccc;
+      }
+    }
+  }
+}
+//
+.line {
+  image {
+    display: block;
+    height: 18rpx;
+    width: 100%;
+  }
+}
+//
+.cart {
+  .title1 {
+    height: 87rpx;
+    font-size: 34rpx;
+    line-height: 87rpx;
+    padding-left: 33rpx;
+  }
+}
+.item {
+  padding: 0 20rpx;
+  display: flex;
+  height: 210rpx;
+  align-items: center;
+  border-top: 1px solid #eee;
+  radio {
+    transform: scale(0.9);
+  }
+  .info-box {
+    display: flex;
+    flex: 1;
+
+    image {
+      width: 162rpx;
+      height: 162rpx;
+    }
+    .right {
+      padding: 0 20rpx;
+      height: 162rpx;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      .title {
+        font-size: 31rpx;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+      .bottom {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        font-size: 32rpx;
-        text:nth-child(1) {
-          margin-right: 30rpx;
+        .price {
+          font-size: 18rpx;
+          color: red;
+          text {
+            font-size: 28rpx;
+          }
         }
-        .iconfont {
-          font-size: 22rpx;
-          color: #ccc;
+        .control {
+          display: flex;
+          justify-content: space-between;
+          view {
+            border: 6rpx solid #666666;
+            width: 52rpx;
+            height: 42rpx;
+            text-align: center;
+            line-height: 42rpx;
+          }
+          text {
+            width: 52rpx;
+            height: 48rpx;
+            font-size: 20rpx;
+            line-height: 48rpx;
+            text-align: center;
+          }
         }
       }
     }
   }
-  // 
-  .line {
-    height: 18rpx;
-    background-color: skyblue;
-  }
-  // 
-  .cart {
-    .title {
-      height: 87rpx;
-      font-size: 34rpx;
-      line-height: 87rpx;
-      padding-left: 33rpx;
+}
+//
+.count {
+  display: flex;
+  height: 96rpx;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  background-color: #fff;
+  width: 100%;
+  .left {
+    padding: 0 20rpx;
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 30rpx;
+    radio {
+      margin-right: 20rpx;
+      transform: scale(0.9);
+    }
+    .price {
+      font-size: 30rpx;
+      text {
+        color: red;
+        font-size: 20rpx;
+      }
+      .big {
+        font-size: 30rpx;
+      }
+    }
+    .yunfei {
+      font-size: 23rpx;
+      color: #d8d8d8;
     }
   }
+  .right {
+    flex-basis: 230rpx;
+    background-color: #eb4450;
+    font-size: 30rpx;
+    color: #fff;
+    text-align: center;
+    line-height: 96rpx;
+  }
+}
 </style>
